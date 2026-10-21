@@ -40,6 +40,15 @@ TARGET_SCREEN_DENSITY := 504
 TARGET_USES_VULKAN := true
 
 # Kernel
+ifeq ($(TARGET_BUILD_VARIANT),eng)
+BOARD_BOOTCONFIG += androidboot.selinux=permissive
+endif
+BOARD_KERNEL_IMAGE_NAME := Image.lz4
+DASH_KERNEL_OUT_DIR := $(TOP)/kernel/xiaomi/dash/out
+KERNEL_FROM_SOURCE := $(wildcard $(DASH_KERNEL_OUT_DIR)/$(BOARD_KERNEL_IMAGE_NAME))
+
+ifeq ($(KERNEL_FROM_SOURCE),)
+# The prebuilt kernel.
 BOARD_BOOT_HEADER_VERSION := 4
 BOARD_KERNEL_BASE := 0x7fff8000
 BOARD_KERNEL_OFFSET := 0x00008000
@@ -48,9 +57,6 @@ BOARD_TAGS_OFFSET := 0x07c88000
 BOARD_RAMDISK_OFFSET := 0x26f08000
 BOARD_RAMDISK_USE_LZ4 := true
 
-ifeq ($(TARGET_BUILD_VARIANT),eng)
-BOARD_BOOTCONFIG += androidboot.selinux=permissive
-endif
 BOARD_BOOTCONFIG += androidboot.console=0
 BOARD_BOOTCONFIG += androidboot.hypervisor.version=GenieZone
 BOARD_BOOTCONFIG += androidboot.hypervisor.vm.supported=1
@@ -73,7 +79,6 @@ BOARD_MKBOOTIMG_ARGS += \
 BOARD_MKBOOTIMG_INIT_ARGS += \
     --header_version $(BOARD_INIT_BOOT_HEADER_VERSION)
 
-BOARD_KERNEL_IMAGE_NAME := Image.lz4
 BOARD_USES_GENERIC_KERNEL_IMAGE := true
 BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 
@@ -94,7 +99,80 @@ BOARD_VENDOR_KERNEL_MODULES_LOAD := $(patsubst %,$(DLKM_MODULES_PATH)/%,$(shell 
 
 BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(wildcard $(RAMDISK_MODULES_PATH)/*.ko)
 BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load))
-BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD  := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load.recovery))
+BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load.recovery))
+else
+# The kernel built from source. build-kernel.sh stages its output into
+# DASH_KERNEL_OUT_DIR; BoardConfigKernel.mk sets the staged paths and the
+# deployment list, and fails on an incomplete staging.
+#
+# The layout and the bootconfig stay the same as the prebuilt branch: the
+# bootloader takes the GKI addresses and boots through the GenieZone
+# hypervisor, and the kernel is built with KASAN, which the boot disables.
+BOARD_BOOT_HEADER_VERSION := 4
+BOARD_KERNEL_BASE := 0x7fff8000
+BOARD_KERNEL_OFFSET := 0x00008000
+BOARD_KERNEL_PAGESIZE := 4096
+BOARD_TAGS_OFFSET := 0x07c88000
+BOARD_RAMDISK_OFFSET := 0x26f08000
+BOARD_RAMDISK_USE_LZ4 := true
+
+BOARD_BOOTCONFIG += androidboot.console=0
+BOARD_BOOTCONFIG += androidboot.hypervisor.version=GenieZone
+BOARD_BOOTCONFIG += androidboot.hypervisor.vm.supported=1
+BOARD_BOOTCONFIG += androidboot.hypervisor.protected_vm.supported=1
+BOARD_KERNEL_CMDLINE += bootopt=64S3,32N2,64N2
+BOARD_KERNEL_CMDLINE += kasan=off
+BOARD_KERNEL_CMDLINE += rcupdate.rcu_expedited=1 rcutree.enable_rcu_lazy
+
+BOARD_INIT_BOOT_HEADER_VERSION := 4
+
+BOARD_MKBOOTIMG_ARGS += \
+    --base $(BOARD_KERNEL_BASE) \
+    --dtb_offset $(BOARD_TAGS_OFFSET) \
+    --header_version $(BOARD_BOOT_HEADER_VERSION) \
+    --kernel_offset $(BOARD_KERNEL_OFFSET) \
+    --pagesize $(BOARD_KERNEL_PAGESIZE) \
+    --ramdisk_offset $(BOARD_RAMDISK_OFFSET) \
+    --tags_offset $(BOARD_TAGS_OFFSET)
+
+BOARD_MKBOOTIMG_INIT_ARGS += \
+    --header_version $(BOARD_INIT_BOOT_HEADER_VERSION)
+
+BOARD_USES_GENERIC_KERNEL_IMAGE := true
+BOARD_INCLUDE_DTB_IN_BOOTIMG := true
+
+include $(DEVICE_PATH)/kernel/BoardConfigKernel.mk
+
+# The platform build only consumes what build-kernel.sh stages, it never
+# builds the kernel itself.
+TARGET_NO_KERNEL := false
+TARGET_FORCE_PREBUILT_KERNEL := true
+TARGET_KERNEL_SOURCE := kernel/xiaomi/dash/kernel-6.6
+TARGET_KERNEL_VERSION := 6.6
+TARGET_KERNEL_CONFIG := gki_defconfig
+TARGET_KERNEL_CONFIG_EXT := \
+    kernel/xiaomi/dash/device-modules/arch/arm64/configs/mgk_64_k66_defconfig \
+    kernel/xiaomi/dash/device-modules/kernel/configs/android-recommended.config \
+    kernel/xiaomi/dash/device-modules/kernel/configs/dash.config
+
+# Out-of-tree module trees, relative to the kernel source directory.
+TARGET_KERNEL_EXT_MODULE_ROOT := kernel/xiaomi/dash
+TARGET_KERNEL_EXT_MODULES := \
+    device-modules \
+    vendor/mediatek/kernel_modules/fpsgo_cus \
+    vendor/mediatek/kernel_modules/fpsgo_int \
+    vendor/mediatek/kernel_modules/sched_cus \
+    vendor/mediatek/kernel_modules/met_drv_v3 \
+    vendor/mediatek/kernel_modules/met_drv_secure_v3 \
+    vendor/mediatek/kernel_modules/met_drv_v3/met_api \
+    vendor/mediatek/kernel_modules/task_turbo_cus \
+    vendor/mediatek/kernel_modules/game_cus \
+    vendor/mediatek/kernel_modules/game_int
+
+BOARD_VENDOR_KERNEL_MODULES_LOAD := $(patsubst %,$(KERNEL_PATH)/modules/vendor_dlkm/%,$(shell cat $(KERNEL_PATH)/modules/vendor_dlkm/modules.load))
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(patsubst %,$(KERNEL_PATH)/modules/vendor_ramdisk/%,$(shell cat $(KERNEL_PATH)/modules/vendor_ramdisk/modules.load))
+BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD := $(patsubst %,$(KERNEL_PATH)/modules/vendor_ramdisk/%,$(shell cat $(KERNEL_PATH)/modules/vendor_ramdisk/modules.load.recovery))
+endif
 
 # Partitions
 BOARD_USES_METADATA_PARTITION := true
