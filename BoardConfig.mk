@@ -102,12 +102,8 @@ BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)
 BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load.recovery))
 else
 # The kernel built from source. build-kernel.sh stages its output into
-# DASH_KERNEL_OUT_DIR; BoardConfigKernel.mk sets the staged paths and the
-# deployment list, and fails on an incomplete staging.
-#
-# The layout and the bootconfig stay the same as the prebuilt branch: the
-# bootloader takes the GKI addresses and boots through the GenieZone
-# hypervisor, and the kernel is built with KASAN, which the boot disables.
+# DASH_KERNEL_OUT_DIR; the image assembly stays the same as the prebuilt
+# branch, the staged directory feeds it directly.
 BOARD_BOOT_HEADER_VERSION := 4
 BOARD_KERNEL_BASE := 0x7fff8000
 BOARD_KERNEL_OFFSET := 0x00008000
@@ -141,37 +137,24 @@ BOARD_MKBOOTIMG_INIT_ARGS += \
 BOARD_USES_GENERIC_KERNEL_IMAGE := true
 BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 
-include $(DEVICE_PATH)/kernel/BoardConfigKernel.mk
+KERNEL_PATH := $(DASH_KERNEL_OUT_DIR)
+TARGET_PREBUILT_KERNEL := $(KERNEL_PATH)/$(BOARD_KERNEL_IMAGE_NAME)
+TARGET_PREBUILT_KERNEL_HEADERS := $(KERNEL_PATH)/kernel-uapi-headers.tar.gz
+BOARD_PREBUILT_DTBIMAGE_DIR := $(KERNEL_PATH)/dtb
 
-# The platform build only consumes what build-kernel.sh stages, it never
-# builds the kernel itself.
-TARGET_NO_KERNEL := false
-TARGET_FORCE_PREBUILT_KERNEL := true
-TARGET_KERNEL_SOURCE := kernel/xiaomi/dash/kernel-6.6
-TARGET_KERNEL_VERSION := 6.6
-TARGET_KERNEL_CONFIG := gki_defconfig
-TARGET_KERNEL_CONFIG_EXT := \
-    kernel/xiaomi/dash/device-modules/arch/arm64/configs/mgk_64_k66_defconfig \
-    kernel/xiaomi/dash/device-modules/kernel/configs/android-recommended.config \
-    kernel/xiaomi/dash/device-modules/kernel/configs/dash.config
+DLKM_MODULES_PATH := $(KERNEL_PATH)/modules/vendor_dlkm
+RAMDISK_MODULES_PATH := $(KERNEL_PATH)/modules/vendor_ramdisk
+SYSTEM_MODULES_PATH := $(KERNEL_PATH)/modules/system_dlkm
 
-# Out-of-tree module trees, relative to the kernel source directory.
-TARGET_KERNEL_EXT_MODULE_ROOT := kernel/xiaomi/dash
-TARGET_KERNEL_EXT_MODULES := \
-    device-modules \
-    vendor/mediatek/kernel_modules/fpsgo_cus \
-    vendor/mediatek/kernel_modules/fpsgo_int \
-    vendor/mediatek/kernel_modules/sched_cus \
-    vendor/mediatek/kernel_modules/met_drv_v3 \
-    vendor/mediatek/kernel_modules/met_drv_secure_v3 \
-    vendor/mediatek/kernel_modules/met_drv_v3/met_api \
-    vendor/mediatek/kernel_modules/task_turbo_cus \
-    vendor/mediatek/kernel_modules/game_cus \
-    vendor/mediatek/kernel_modules/game_int
+BOARD_SYSTEM_KERNEL_MODULES := $(wildcard $(SYSTEM_MODULES_PATH)/*.ko)
+BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(patsubst %,$(SYSTEM_MODULES_PATH)/%,$(shell cat $(SYSTEM_MODULES_PATH)/modules.load))
 
-BOARD_VENDOR_KERNEL_MODULES_LOAD := $(patsubst %,$(KERNEL_PATH)/modules/vendor_dlkm/%,$(shell cat $(KERNEL_PATH)/modules/vendor_dlkm/modules.load))
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(patsubst %,$(KERNEL_PATH)/modules/vendor_ramdisk/%,$(shell cat $(KERNEL_PATH)/modules/vendor_ramdisk/modules.load))
-BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD := $(patsubst %,$(KERNEL_PATH)/modules/vendor_ramdisk/%,$(shell cat $(KERNEL_PATH)/modules/vendor_ramdisk/modules.load.recovery))
+BOARD_VENDOR_KERNEL_MODULES := $(wildcard $(DLKM_MODULES_PATH)/*.ko)
+BOARD_VENDOR_KERNEL_MODULES_LOAD := $(patsubst %,$(DLKM_MODULES_PATH)/%,$(shell cat $(DLKM_MODULES_PATH)/modules.load))
+
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(wildcard $(RAMDISK_MODULES_PATH)/*.ko)
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load))
+BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load.recovery))
 endif
 
 # Partitions

@@ -6,6 +6,85 @@
 # staging layout under KERNEL_PATH. The auto-load lists are the prebuilt
 # kernel's, kept verbatim by build-kernel.sh.
 
+
+BOARD_SYSTEM_KERNEL_MODULES := $(wildcard \
+    $(KERNEL_PATH)/modules/system_dlkm/6lowpan.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/8021q.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/9pnet.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/9pnet_fd.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/aqc111.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/asix.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ax88179_178a.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/bluetooth.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/bsd_comp.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/btbcm.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/btqca.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/btsdio.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/can-bcm.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/can-dev.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/can-gw.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/can-raw.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/can.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/cctrng.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/cdc-acm.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/cdc_eem.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/cdc_ether.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/cdc_ncm.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/diag.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ftdi_sio.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/gzvm.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/hci_uart.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/hidp.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ieee802154.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ieee802154_6lowpan.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ieee802154_socket.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/kheaders.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/l2tp_core.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/l2tp_ppp.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/libarc4.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/mac802154.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/macsec.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/mii.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/nfc.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/nhc_dest.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/nhc_fragment.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/nhc_hop.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/nhc_ipv6.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/nhc_mobility.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/nhc_routing.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/nhc_udp.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/open-dice.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ppp_deflate.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ppp_generic.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ppp_mppe.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/pppox.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/pps_core.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/pptp.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ptp.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/ptp_kvm.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/r8152.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/r8153_ecm.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/rfcomm.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/rfkill.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/rtl8150.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/slcan.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/slhc.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/tipc.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/usbmon.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/usbnet.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/usbserial.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/vcan.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/vcpu_stall_detector.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/virtio_balloon.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/virtio_blk.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/virtio_console.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/virtio_pci.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/virtio_pci_legacy_dev.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/virtio_pci_modern_dev.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/vmw_vsock_virtio_transport.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/wwan.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/zram.ko \
+    $(KERNEL_PATH)/modules/system_dlkm/zsmalloc.ko)
 BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(wildcard \
     $(KERNEL_PATH)/modules/vendor_ramdisk/8250_mtk.ko \
     $(KERNEL_PATH)/modules/vendor_ramdisk/adapter_class.ko \

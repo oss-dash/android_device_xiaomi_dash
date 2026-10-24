@@ -608,7 +608,7 @@ echo "   all modules match the kernel"
 # ---------------------------------------------------------------------------
 step "8/8 stage into $OUT"
 rm -rf "$OUT"
-mkdir -p "$OUT/dtb" "$OUT/modules/vendor_dlkm" "$OUT/modules/vendor_ramdisk"
+mkdir -p "$OUT/dtb" "$OUT/modules/vendor_dlkm" "$OUT/modules/vendor_ramdisk" "$OUT/modules/system_dlkm"
 
 IMG="$KBUILD_OUT/arch/arm64/boot/Image"
 [ -f "$IMG" ] || die "no Image built at $IMG"
@@ -649,7 +649,7 @@ echo "   dtb/ <- mt6991.dtb (built from the source)"
 # by the config fragment of the device tree, so they are not missing.
 echo "   partitioning modules"
 declare -A PART
-for part in vendor_dlkm vendor_ramdisk; do
+for part in vendor_dlkm vendor_ramdisk system_dlkm; do
     [ -d "$PREBUILT/modules/$part" ] || continue
     for ko in "$PREBUILT/modules/$part"/*.ko; do
         [ -e "$ko" ] || continue
@@ -693,7 +693,7 @@ done < <(find "$KBUILD_OUT" "$WS/device-modules" "$WS/vendor/mediatek/kernel_mod
               -name '*.ko' -not -path '*/.tmp_*/*' 2>/dev/null)
 
 MISSING=""
-for part in vendor_dlkm vendor_ramdisk; do
+for part in vendor_dlkm vendor_ramdisk system_dlkm; do
     dir="$OUT/modules/$part"
     src="$PREBUILT/modules/$part"
     [ -d "$src" ] || continue
@@ -704,6 +704,7 @@ for part in vendor_dlkm vendor_ramdisk; do
     case "$part" in
         vendor_ramdisk) LIST="$DEVICE_DIR/kernel/modules.load.platform" ;;
         vendor_dlkm)    LIST="$DEVICE_DIR/kernel/modules.load.vendor_dlkm" ;;
+        system_dlkm)    LIST="$DEVICE_DIR/kernel/modules.load.system" ;;
         *)              LIST="" ;;
     esac
     for f in modules.load modules.load.recovery modules.blocklist; do
