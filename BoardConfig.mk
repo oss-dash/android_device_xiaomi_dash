@@ -148,7 +148,7 @@ TARGET_KERNEL_EXT_MODULES := \
 # Module load lists taken from the stock kernel. kernel.mk installs the built
 # modules into the partitions and writes these lists into the images.
 # SYSTEM_KERNEL_MODULES names the modules of system_dlkm, everything else goes
-# to vendor_dlkm, BOOT_KERNEL_MODULES to the vendor ramdisk.
+# to vendor_dlkm.
 #
 # Two lists are not verbatim copies of the stock ones:
 #  - bluetooth.ko is listed in both stock lists, system_dlkm and vendor_dlkm.
@@ -167,12 +167,11 @@ TARGET_KERNEL_EXT_MODULES := \
 SYSTEM_KERNEL_MODULES := $(shell cat $(DEVICE_PATH)/kernel/modules.load.system)
 BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.system)
 BOARD_VENDOR_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.vendor_dlkm)
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.platform)
 # The ramdisk ships the whole stock module set (ccci, ccmni, mddp, the
-# rebooter and the mtk mailboxes among them), not only the modules the
-# platform list auto loads, exactly like the prebuilt kernel lays it out.
+# rebooter, mediatek-drm and the mtk mailboxes among them), not only the
+# modules the platform list auto loads.
 BOOT_KERNEL_MODULES := $(shell cat $(DEVICE_PATH)/kernel/modules.list.vendor_ramdisk)
-
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.platform)
 
 # Partitions
 BOARD_USES_METADATA_PARTITION := true
@@ -233,7 +232,7 @@ SYSTEM_EXT_PUBLIC_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy/public
 # Verified Boot
 BOARD_AVB_ENABLE := true
 BOARD_MOVE_GSI_AVB_KEYS_TO_VENDOR_BOOT := true
-BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 3
+BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 1
 
 BOARD_AVB_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
 BOARD_AVB_ALGORITHM := SHA256_RSA4096
