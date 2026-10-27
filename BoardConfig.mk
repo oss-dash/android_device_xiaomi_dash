@@ -40,6 +40,11 @@ TARGET_SCREEN_DENSITY := 504
 TARGET_USES_VULKAN := true
 
 # Kernel
+ifeq ($(TARGET_BUILD_VARIANT),eng)
+BOARD_BOOTCONFIG += androidboot.selinux=permissive
+endif
+
+# Boot image (header v4, the kernel image is lz4 compressed)
 BOARD_BOOT_HEADER_VERSION := 4
 BOARD_KERNEL_BASE := 0x7fff8000
 BOARD_KERNEL_OFFSET := 0x00008000
@@ -48,9 +53,6 @@ BOARD_TAGS_OFFSET := 0x07c88000
 BOARD_RAMDISK_OFFSET := 0x26f08000
 BOARD_RAMDISK_USE_LZ4 := true
 
-ifeq ($(TARGET_BUILD_VARIANT),eng)
-BOARD_BOOTCONFIG += androidboot.selinux=permissive
-endif
 BOARD_BOOTCONFIG += androidboot.console=0
 BOARD_BOOTCONFIG += androidboot.hypervisor.version=GenieZone
 BOARD_BOOTCONFIG += androidboot.hypervisor.vm.supported=1
@@ -73,28 +75,104 @@ BOARD_MKBOOTIMG_ARGS += \
 BOARD_MKBOOTIMG_INIT_ARGS += \
     --header_version $(BOARD_INIT_BOOT_HEADER_VERSION)
 
-BOARD_KERNEL_IMAGE_NAME := Image.lz4
 BOARD_USES_GENERIC_KERNEL_IMAGE := true
 BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 
-KERNEL_PATH := $(DEVICE_PATH)-kernel
-TARGET_PREBUILT_KERNEL := $(KERNEL_PATH)/$(BOARD_KERNEL_IMAGE_NAME)
-TARGET_PREBUILT_KERNEL_HEADERS := $(KERNEL_PATH)/kernel-uapi-headers.tar.gz
-BOARD_PREBUILT_DTBIMAGE_DIR := $(KERNEL_PATH)/dtb
+# The kernel is compiled as part of the ROM build by
+# vendor/lineage/build/tasks/kernel.mk: gki_defconfig is the GKI base,
+# mgk_64_k66_defconfig the MT6991 platform config and dash.config the dash
+# device config. The mtk device modules are an external module tree next to
+# the kernel source, the same layout the Kleaf build uses.
+TARGET_NO_KERNEL := false
+TARGET_KERNEL_SOURCE := kernel/xiaomi/dash/kernel-6.6
+TARGET_KERNEL_ARCH := arm64
+TARGET_KERNEL_HEADER_ARCH := arm64
+TARGET_KERNEL_CONFIG := gki_defconfig
+TARGET_KERNEL_CONFIG_EXT := \
+    kernel/xiaomi/dash/device-modules/kernel/configs/mgk_64_k66.config \
+    kernel/xiaomi/dash/device-modules/kernel/configs/dash.config
+# Absolute paths: the module makefiles use DEVICE_MODULES_PATH in -I flags
+# and includes, and kbuild runs them from the object directory, so a relative
+# path (./kernel/...) resolves against the wrong root and every header the
+# device modules provide is lost.
+# KCFLAGS is what build.config.common exports for the MTK kernel build; the
+# Mali compat header keys off __ANDROID_COMMON_KERNEL__ and the two warnings
+# are errors on this tree otherwise.
+TARGET_KERNEL_ADDITIONAL_FLAGS := \
+    KCFLAGS='-D__ANDROID_COMMON_KERNEL__ -Wno-error=enum-compare -Wno-error=sometimes-uninitialized' \
+    ROOT_DIR=$(abspath $(TOP)/kernel/xiaomi/dash) \
+    KERNEL_DIR=$(abspath $(TOP)/kernel/xiaomi/dash/kernel-6.6) \
+    DEVICE_MODULES_DIR=device-modules \
+    DEVICE_MODULES_REL_DIR=../device-modules \
+    KCONFIG_EXT_PREFIX=../device-modules/ \
+    DEVICE_MODULES_PATH=$(abspath $(TOP)/kernel/xiaomi/dash/device-modules) \
+    DEVCIE_MODULES_INCLUDE=-I$(abspath $(TOP)/kernel/xiaomi/dash/device-modules)/include
+TARGET_KERNEL_VERSION := 6.6
+TARGET_KERNEL_CLANG_VERSION := r510928
+BOARD_KERNEL_IMAGE_NAME := Image.lz4
 
-DLKM_MODULES_PATH := $(KERNEL_PATH)/modules/vendor_dlkm
-RAMDISK_MODULES_PATH := $(KERNEL_PATH)/modules/vendor_ramdisk
-SYSTEM_MODULES_PATH := $(KERNEL_PATH)/modules/system_dlkm
+# The dtb is the xiaomi board base with the dash overlay applied, wrapped in
+# the MTK LK header: built from the device modules sources by this file.
+BOARD_CUSTOM_DTBIMG_MK := $(DEVICE_PATH)/kernel/dtb.mk
 
-BOARD_SYSTEM_KERNEL_MODULES := $(wildcard $(SYSTEM_MODULES_PATH)/*.ko)
-BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(patsubst %,$(SYSTEM_MODULES_PATH)/%,$(shell cat $(SYSTEM_MODULES_PATH)/modules.load))
+# Out-of-tree module trees, relative to the kernel source directory.
+TARGET_KERNEL_EXT_MODULE_ROOT := kernel/xiaomi/dash
+TARGET_KERNEL_EXT_MODULES := \
+    device-modules \
+    vendor/mediatek/kernel_modules/connectivity/common \
+    vendor/mediatek/kernel_modules/connectivity/conninfra \
+    vendor/mediatek/kernel_modules/connectivity/connfem \
+    vendor/mediatek/kernel_modules/connectivity/gps/gps_stp \
+    vendor/mediatek/kernel_modules/connectivity/gps/data_link \
+    vendor/mediatek/kernel_modules/connectivity/gps/gps_pwr \
+    vendor/mediatek/kernel_modules/connectivity/gps/mi_gps_pwr \
+    vendor/mediatek/kernel_modules/connectivity/gps/gps_scp \
+    vendor/mediatek/kernel_modules/connectivity/fmradio \
+    vendor/mediatek/kernel_modules/connectivity/wlan/adaptor \
+    vendor/mediatek/kernel_modules/connectivity/wlan/adaptor/wlan_page_pool \
+    vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4m/build/connac3x/6991_6639_new9gen2 \
+    vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4m/build/connac3x/6991_6653 \
+    vendor/mediatek/kernel_modules/connectivity/bt/linux_v2 \
+    vendor/mediatek/kernel_modules/gpu \
+    vendor/mediatek/kernel_modules/hbt_driver_cus \
+    vendor/mediatek/kernel_modules/mtkcam \
+    vendor/mediatek/kernel_modules/afs_common_utils \
+    vendor/mediatek/kernel_modules/afs_core_cus \
+    vendor/mediatek/kernel_modules/fpsgo_cus \
+    vendor/mediatek/kernel_modules/sched_cus \
+    vendor/mediatek/kernel_modules/met_drv_v3 \
+    vendor/mediatek/kernel_modules/met_drv_v3/met_api \
+    vendor/mediatek/kernel_modules/task_turbo_cus \
+    vendor/mediatek/kernel_modules/game_cus
 
-BOARD_VENDOR_KERNEL_MODULES := $(wildcard $(DLKM_MODULES_PATH)/*.ko)
-BOARD_VENDOR_KERNEL_MODULES_LOAD := $(patsubst %,$(DLKM_MODULES_PATH)/%,$(shell cat $(DLKM_MODULES_PATH)/modules.load))
+# Module load lists taken from the stock kernel. kernel.mk installs the built
+# modules into the partitions and writes these lists into the images.
+# SYSTEM_KERNEL_MODULES names the modules of system_dlkm, everything else goes
+# to vendor_dlkm, BOOT_KERNEL_MODULES to the vendor ramdisk.
+#
+# Two lists are not verbatim copies of the stock ones:
+#  - bluetooth.ko is listed in both stock lists, system_dlkm and vendor_dlkm.
+#    kernel.mk gives a module exactly one partition, and the GKI copy in
+#    system_dlkm is the one that loads, so the vendor_dlkm list omits it.
+#  - macsec.ko is an unused wired-Ethernet module. kernel.mk picks the
+#    vendor_dlkm set by substring-matching every module name against
+#    SYSTEM_KERNEL_MODULES, so "sec.ko" matches inside "macsec.ko" and the
+#    MediaTek sec module would never reach vendor_dlkm. macsec is therefore
+#    left out of the system_dlkm list; it is built into vendor_dlkm instead
+#    (and not loaded) so sec.ko stays where the stock kernel loads it from.
+#
+# metis, mi_schedule and xr_qs are not in the vendor_dlkm list because they do
+# not build: metis is not wired into the device-modules Makefile yet, and the
+# other two patch scheduler internals that 6.6 does not have.
+SYSTEM_KERNEL_MODULES := $(shell cat $(DEVICE_PATH)/kernel/modules.load.system)
+BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.system)
+BOARD_VENDOR_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.vendor_dlkm)
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.platform)
+# The ramdisk ships the whole stock module set (ccci, ccmni, mddp, the
+# rebooter and the mtk mailboxes among them), not only the modules the
+# platform list auto loads, exactly like the prebuilt kernel lays it out.
+BOOT_KERNEL_MODULES := $(shell cat $(DEVICE_PATH)/kernel/modules.list.vendor_ramdisk)
 
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(wildcard $(RAMDISK_MODULES_PATH)/*.ko)
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load))
-BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD  := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load.recovery))
 
 # Partitions
 BOARD_USES_METADATA_PARTITION := true
@@ -120,6 +198,8 @@ BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE := $(PRODUCT_SYSTEM_PARTITIONS_FILE_SYSTEM_TY
 BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE := $(PRODUCT_SYSTEM_PARTITIONS_FILE_SYSTEM_TYPE)
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := erofs
 BOARD_ODMIMAGE_FILE_SYSTEM_TYPE := erofs
+# system_dlkm carries the core GKI modules (rfkill, bluetooth, hci_uart):
+# without the partition cfg80211 and bluetooth cannot load.
 BOARD_SYSTEM_DLKMIMAGE_FILE_SYSTEM_TYPE := erofs
 BOARD_VENDOR_DLKMIMAGE_FILE_SYSTEM_TYPE := erofs
 BOARD_ODM_DLKMIMAGE_FILE_SYSTEM_TYPE := erofs
@@ -153,11 +233,10 @@ SYSTEM_EXT_PUBLIC_SEPOLICY_DIRS += $(DEVICE_PATH)/sepolicy/public
 # Verified Boot
 BOARD_AVB_ENABLE := true
 BOARD_MOVE_GSI_AVB_KEYS_TO_VENDOR_BOOT := true
-BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --set_hashtree_disabled_flag
+BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 3
 
 BOARD_AVB_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
 BOARD_AVB_ALGORITHM := SHA256_RSA4096
-BOARD_AVB_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
 BOARD_AVB_ROLLBACK_INDEX_LOCATION := 0
 
 BOARD_AVB_BOOT_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
