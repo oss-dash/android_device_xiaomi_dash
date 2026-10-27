@@ -123,9 +123,6 @@ genfscon sysfs /devices/platform/1cc04000.spmi/spmi-0/0-03/1cc04000.spmi:mt6379@
 genfscon sysfs /devices/platform/1cc04000.spmi/spmi-0/0-0e/1cc04000.spmi:mt6379@e:chg/power_supply/primary_chg/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/1cc04000.spmi/spmi-0/0-0e/1cc04000.spmi:mt6379@e:tcpc/tcpc/type_c_port0/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/aov/wakeup u:object_r:sysfs_wakeup:s0
-genfscon sysfs /devices/platform/battery-manager/power_supply/battery/wakeup u:object_r:sysfs_wakeup:s0
-genfscon sysfs /devices/platform/charger/power_supply/mtk-mst-hvdiv-chg/wakeup u:object_r:sysfs_wakeup:s0
-genfscon sysfs /devices/platform/charger/power_supply/mtk-slv-hvdiv-chg/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/charger/power_supply/usb/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/gpio-keys/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/odm/odm:mi_t1_chip/wakeup u:object_r:sysfs_wakeup:s0
@@ -134,8 +131,6 @@ genfscon sysfs /devices/platform/soc/11280000.i2c/i2c-5/5-0034/11280000.i2c:mt63
 genfscon sysfs /devices/platform/soc/11280000.i2c/i2c-5/5-0034/11280000.i2c:mt6375@34:chg/power_supply/primary_chg/wakeup22 u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/soc/11280000.i2c/i2c-5/5-0034/11280000.i2c:mt6375@34:tcpc/tcpc/type_c_port0/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/soc/11f00000.i2c/i2c-5/5-0034/mt6360-chg.1.auto/power_supply/primary_chg/wakeup25 u:object_r:sysfs_wakeup:s0
-genfscon sysfs /devices/platform/soc/11f01000.i2c/i2c-5/5-0034/11f01000.i2c:mt6375@34:chg/power_supply/primary_chg/wakeup u:object_r:sysfs_wakeup:s0
-genfscon sysfs /devices/platform/soc/11f01000.i2c/i2c-5/5-0034/11f01000.i2c:mt6375@34:tcpc/tcpc/type_c_port0/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/soc/11f02000.i2c/i2c-10/10-0053/rt9490-chg.1.auto/power_supply/primary_chg/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/soc/120a0000.i2c/i2c-5/5-006e/power_supply/cp_master/wakeup u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/platform/soc/13150000.i2c/i2c-3/3-0028/wakeup u:object_r:sysfs_wakeup:s0
