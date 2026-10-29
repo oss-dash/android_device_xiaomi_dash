@@ -77,24 +77,70 @@ BOARD_KERNEL_IMAGE_NAME := Image.lz4
 BOARD_USES_GENERIC_KERNEL_IMAGE := true
 BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 
-KERNEL_PATH := $(DEVICE_PATH)-kernel
-TARGET_PREBUILT_KERNEL := $(KERNEL_PATH)/$(BOARD_KERNEL_IMAGE_NAME)
-TARGET_PREBUILT_KERNEL_HEADERS := $(KERNEL_PATH)/kernel-uapi-headers.tar.gz
-BOARD_PREBUILT_DTBIMAGE_DIR := $(KERNEL_PATH)/dtb
+# The kernel is compiled by vendor/lineage/build/tasks/kernel.mk. Match the
+# Kleaf config order: gki_defconfig first, then the MT6991 project defconfig,
+# the dash device overlay and the MTK signing override.
+TARGET_NO_KERNEL := false
+TARGET_KERNEL_SOURCE := kernel/xiaomi/dash/kernel-6.6
+TARGET_KERNEL_ARCH := arm64
+TARGET_KERNEL_HEADER_ARCH := arm64
+TARGET_KERNEL_VERSION := 6.6
+TARGET_KERNEL_CLANG_VERSION := r510928
+TARGET_KERNEL_CONFIG := gki_defconfig
+TARGET_KERNEL_CONFIG_EXT := \
+    kernel/xiaomi/dash/device-modules/kernel/configs/mgk_64_k66.config \
+    kernel/xiaomi/dash/device-modules/kernel/configs/dash.config
 
-DLKM_MODULES_PATH := $(KERNEL_PATH)/modules/vendor_dlkm
-RAMDISK_MODULES_PATH := $(KERNEL_PATH)/modules/vendor_ramdisk
-SYSTEM_MODULES_PATH := $(KERNEL_PATH)/modules/system_dlkm
+# The MTK device-module makefiles expect these during external module builds.
+TARGET_KERNEL_ADDITIONAL_FLAGS := \
+    KCFLAGS='-D__ANDROID_COMMON_KERNEL__ -Wno-error=enum-compare -Wno-error=sometimes-uninitialized' \
+    DEVICE_MODULES_REL_DIR=../device-modules \
+    DEVICE_MODULES_PATH=$(abspath $(TOP)/kernel/xiaomi/dash/device-modules) \
+    DEVCIE_MODULES_INCLUDE=-I$(abspath $(TOP)/kernel/xiaomi/dash/device-modules)/include
+TARGET_KERNEL_KCONFIG_EXT_PREFIX := kernel/xiaomi/dash/device-modules
 
-BOARD_SYSTEM_KERNEL_MODULES := $(wildcard $(SYSTEM_MODULES_PATH)/*.ko)
-BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(patsubst %,$(SYSTEM_MODULES_PATH)/%,$(shell cat $(SYSTEM_MODULES_PATH)/modules.load))
+# Out-of-tree module trees, relative to the kernel source directory.
+TARGET_KERNEL_EXT_MODULE_ROOT := kernel/xiaomi/dash
+TARGET_KERNEL_EXT_MODULES := \
+    device-modules \
+    vendor/mediatek/kernel_modules/connectivity/common \
+    vendor/mediatek/kernel_modules/connectivity/conninfra \
+    vendor/mediatek/kernel_modules/connectivity/connfem \
+    vendor/mediatek/kernel_modules/connectivity/gps/gps_stp \
+    vendor/mediatek/kernel_modules/connectivity/gps/data_link \
+    vendor/mediatek/kernel_modules/connectivity/gps/gps_pwr \
+    vendor/mediatek/kernel_modules/connectivity/gps/mi_gps_pwr \
+    vendor/mediatek/kernel_modules/connectivity/gps/gps_scp \
+    vendor/mediatek/kernel_modules/connectivity/fmradio \
+    vendor/mediatek/kernel_modules/connectivity/wlan/adaptor \
+    vendor/mediatek/kernel_modules/connectivity/wlan/adaptor/wlan_page_pool \
+    vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4m/build/connac3x/6991_6639_new9gen2 \
+    vendor/mediatek/kernel_modules/connectivity/wlan/core/gen4m/build/connac3x/6991_6653 \
+    vendor/mediatek/kernel_modules/connectivity/bt/linux_v2 \
+    vendor/mediatek/kernel_modules/gpu \
+    vendor/mediatek/kernel_modules/hbt_driver_cus \
+    vendor/mediatek/kernel_modules/mtkcam \
+    vendor/mediatek/kernel_modules/afs_common_utils \
+    vendor/mediatek/kernel_modules/afs_core_cus \
+    vendor/mediatek/kernel_modules/fpsgo_cus \
+    vendor/mediatek/kernel_modules/sched_cus \
+    vendor/mediatek/kernel_modules/met_drv_v3 \
+    vendor/mediatek/kernel_modules/met_drv_v3/met_api \
+    vendor/mediatek/kernel_modules/task_turbo_cus \
+    vendor/mediatek/kernel_modules/game_cus
 
-BOARD_VENDOR_KERNEL_MODULES := $(wildcard $(DLKM_MODULES_PATH)/*.ko)
-BOARD_VENDOR_KERNEL_MODULES_LOAD := $(patsubst %,$(DLKM_MODULES_PATH)/%,$(shell cat $(DLKM_MODULES_PATH)/modules.load))
+# Stock-derived load lists. kernel.mk splits installed modules between
+# system_dlkm and vendor_dlkm using SYSTEM_KERNEL_MODULES.
+SYSTEM_KERNEL_MODULES := $(shell cat $(DEVICE_PATH)/kernel/modules.load.system)
+BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.system)
+BOARD_VENDOR_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.vendor_dlkm)
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.platform)
 
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(wildcard $(RAMDISK_MODULES_PATH)/*.ko)
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load))
-BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD  := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load.recovery))
+# Ship the full stock ramdisk set, not only the platform auto-load list.
+BOOT_KERNEL_MODULES := $(shell cat $(DEVICE_PATH)/kernel/modules.list.vendor_ramdisk)
+
+# Build the boot DTB from device-modules and apply the stock mbox-attr fix.
+BOARD_CUSTOM_DTBIMG_MK := $(DEVICE_PATH)/kernel/dtb.mk
 
 # Partitions
 BOARD_USES_METADATA_PARTITION := true
@@ -155,24 +201,24 @@ BOARD_AVB_ENABLE := true
 BOARD_MOVE_GSI_AVB_KEYS_TO_VENDOR_BOOT := true
 BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --set_hashtree_disabled_flag
 
-BOARD_AVB_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
+BOARD_AVB_KEY_PATH := vendor/evolution-priv/keys/avb.pk8
 BOARD_AVB_ALGORITHM := SHA256_RSA4096
 BOARD_AVB_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
 BOARD_AVB_ROLLBACK_INDEX_LOCATION := 0
 
-BOARD_AVB_BOOT_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
+BOARD_AVB_BOOT_KEY_PATH := vendor/evolution-priv/keys/avb.pk8
 BOARD_AVB_BOOT_ALGORITHM := SHA256_RSA4096
 BOARD_AVB_BOOT_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
 BOARD_AVB_BOOT_ROLLBACK_INDEX_LOCATION := 3
 
 BOARD_AVB_VBMETA_SYSTEM := product pvmfw system system_ext system_dlkm
-BOARD_AVB_VBMETA_SYSTEM_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
+BOARD_AVB_VBMETA_SYSTEM_KEY_PATH := vendor/evolution-priv/keys/avb.pk8
 BOARD_AVB_VBMETA_SYSTEM_ALGORITHM := SHA256_RSA4096
 BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
 BOARD_AVB_VBMETA_SYSTEM_ROLLBACK_INDEX_LOCATION := 2
 
 BOARD_AVB_VBMETA_VENDOR := odm odm_dlkm vendor vendor_dlkm
-BOARD_AVB_VBMETA_VENDOR_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
+BOARD_AVB_VBMETA_VENDOR_KEY_PATH := vendor/evolution-priv/keys/avb.pk8
 BOARD_AVB_VBMETA_VENDOR_ALGORITHM := SHA256_RSA4096
 BOARD_AVB_VBMETA_VENDOR_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
 BOARD_AVB_VBMETA_VENDOR_ROLLBACK_INDEX_LOCATION := 4
