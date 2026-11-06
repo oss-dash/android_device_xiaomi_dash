@@ -93,7 +93,7 @@ TARGET_KERNEL_CONFIG_EXT := \
 
 # The MTK device-module makefiles expect these during external module builds.
 TARGET_KERNEL_ADDITIONAL_FLAGS := \
-    KCFLAGS='-D__ANDROID_COMMON_KERNEL__ -Wno-error=enum-compare -Wno-error=sometimes-uninitialized' \
+    KCFLAGS='-D__ANDROID_COMMON_KERNEL__ -Wno-error=enum-compare -Wno-error=sometimes-uninitialized -Wno-error=frame-larger-than -Wno-error=attribute-warning' \
     DEVICE_MODULES_REL_DIR=../device-modules \
     DEVICE_MODULES_PATH=$(abspath $(TOP)/kernel/xiaomi/dash/device-modules) \
     DEVCIE_MODULES_INCLUDE=-I$(abspath $(TOP)/kernel/xiaomi/dash/device-modules)/include
