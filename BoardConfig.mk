@@ -135,6 +135,7 @@ SYSTEM_KERNEL_MODULES := $(shell cat $(DEVICE_PATH)/kernel/modules.load.system)
 BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.system)
 BOARD_VENDOR_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.vendor_dlkm)
 BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(shell cat $(DEVICE_PATH)/kernel/modules.load.platform)
+BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD := $(patsubst %,$(DEVICE_PATH)/kernel/%,$(shell cat $(DEVICE_PATH)/kernel/modules.load.recovery))
 
 # Ship the full stock ramdisk set, not only the platform auto-load list.
 BOOT_KERNEL_MODULES := $(shell cat $(DEVICE_PATH)/kernel/modules.list.vendor_ramdisk)
