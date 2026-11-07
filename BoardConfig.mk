@@ -48,7 +48,7 @@ BOARD_TAGS_OFFSET := 0x07c88000
 BOARD_RAMDISK_OFFSET := 0x26f08000
 BOARD_RAMDISK_USE_LZ4 := true
 
-ifeq ($(TARGET_BUILD_VARIANT),eng)
+ifneq ($(filter userdebug eng,$(TARGET_BUILD_VARIANT)),)
 BOARD_BOOTCONFIG += androidboot.selinux=permissive
 endif
 BOARD_BOOTCONFIG += androidboot.console=0
