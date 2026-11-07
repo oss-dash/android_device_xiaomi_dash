@@ -479,3 +479,7 @@ PRODUCT_COPY_FILES += \
 
 # Inherit the proprietary files
 $(call inherit-product, vendor/xiaomi/dash/dash-vendor.mk)
+
+# TEMP: open adb for boot debugging (drop once the device boots).
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=0
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.debuggable=1
