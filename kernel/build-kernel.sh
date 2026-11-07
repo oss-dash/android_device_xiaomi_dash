@@ -314,8 +314,10 @@ KCFLAGS="${KCFLAGS//-Wno-error=implicit-enum-enum-cast/}"
 # The module trees build with -Werror. The kernel pins clang r510928, the
 # tree ships a newer one which warns about things the older one did not, so
 # those warnings are not fatal. The cast between two enumeration types is
-# one of them, the camera tree does it.
-export KCFLAGS="$KCFLAGS -Wno-error=enum-compare -Wno-error=sometimes-uninitialized"
+# one of them, the camera tree does it. The non-LTO build also trips the
+# xiaomi_touch ioctl frame size and a fortify write-overflow false positive,
+# so relax those too.
+export KCFLAGS="$KCFLAGS -Wno-error=enum-compare -Wno-error=sometimes-uninitialized -Wno-error=frame-larger-than -Wno-error=attribute-warning"
 # -Wimplicit-enum-enum-cast only exists in the newer clang. Probe with
 # -Werror so an unknown option fails the probe instead of only warning;
 # otherwise the option is added to the real build and fails there.
