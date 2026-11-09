@@ -44,10 +44,6 @@ mtk_gpu_hal.ko
 mtk_gpufreq_wrapper.ko
 mtk_gpufreq_mt6991.ko
 mtk_gpu_iommu_mt6991.ko
-thermal-generic-adc.ko
-thermal_trace.ko
-thermal_interface.ko
-mi_thermal_interface.ko
 ged.ko
 mtk_gpu_pdma_mt6991.ko
 mali_prot_alloc_mt6991_r49.ko
@@ -72,6 +68,8 @@ mt6991-mt6681.ko
 mddp.ko
 soc_temp_lvts.ko
 pmic_temp.ko
+thermal-generic-adc.ko
+thermal_trace.ko
 fs3002_haptic.ko
 board_temp.ko
 vtskin_temp.ko
@@ -79,6 +77,8 @@ md_cooling_all.ko
 charger_cooling.ko
 backlight_cooling.ko
 cpu_isolate_cooling.ko
+thermal_interface.ko
+mi_thermal_interface.ko
 wifi_cooling.ko
 mtk_gpu_qos.ko
 mt6681-accdet.ko
@@ -126,6 +126,7 @@ si_haptic.ko
 conninfra.ko
 wmt_chrdev_wifi_connac3.ko
 wlan_drv_gen4m_6991_6639_new9gen2.ko
+bluetooth.ko
 btif_drv.ko
 btmtk_uart_unify.ko
 gps_drv_dl_v062.ko
