@@ -18,6 +18,12 @@ PRODUCT_VIRTUAL_AB_COMPRESSION_METHOD := lz4
 PRODUCT_VENDOR_PROPERTIES += ro.virtual_ab.compression.threads=true
 endif
 
+# Eng builds are used for bring-up; keep adb reachable without the
+# on-device authorization dialog.
+ifeq ($(TARGET_BUILD_VARIANT),eng)
+WITH_ADB_INSECURE := true
+endif
+
 AB_OTA_POSTINSTALL_CONFIG += \
     RUN_POSTINSTALL_system=true \
     POSTINSTALL_PATH_system=system/bin/otapreopt_script \
