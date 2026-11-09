@@ -22,6 +22,7 @@ endif
 # on-device authorization dialog.
 ifneq ($(filter eng userdebug,$(TARGET_BUILD_VARIANT)),)
 WITH_ADB_INSECURE := true
+PRODUCT_VENDOR_PROPERTIES += persist.sys.usb.config=mtp,adb
 endif
 
 AB_OTA_POSTINSTALL_CONFIG += \
