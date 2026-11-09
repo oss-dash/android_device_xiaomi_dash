@@ -1260,3 +1260,8 @@ on property:sys.boot_completed=1 && property:ro.build.type=user && property:ro.d
 
 on property:ro.boot.crash_reason=*
   setprop vendor.minidump.crash_reason ${ro.boot.crash_reason}
+
+# The /data persistent copy can override the build default. Force the
+# eng USB config before UsbDeviceManager starts so adbd is exposed.
+on post-fs-data
+    setprop persist.sys.usb.config mtp,adb
