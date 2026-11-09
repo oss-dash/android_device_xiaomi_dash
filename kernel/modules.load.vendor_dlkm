@@ -21,10 +21,6 @@ mtk-pmic-oc-debug.ko
 mtk-ssc.ko
 mtk-ssc-dbg-v2.ko
 ccmni.ko
-c2k_usb.ko
-c2k_usb_f_via_atc.ko
-c2k_usb_f_via_ets.ko
-c2k_usb_f_via_modem.ko
 mtk_u_ether.ko
 mtk_usb_f_rndis.ko
 rps_perf.ko
@@ -59,7 +55,6 @@ mali_mgm_mt6991_r49.ko
 mali_kbase_mt6991_r49.ko
 adsp-v2.ko
 audio_ipi.ko
-usb_offload.ko
 mtk-sp-spk-amp.ko
 snd-soc-rt5512.ko
 snd-soc-aw882xx.ko
@@ -177,7 +172,6 @@ mtk-smmuv3-lmu.ko
 mtk-smmuv3-mpam-mon.ko
 mtk_smmu_qos.ko
 cmdq-sec-drv.ko
-mtk_ccuv.ko
 camera_dpe_isp8.ko
 wla-v1.ko
 wla-v1-dbg.ko
