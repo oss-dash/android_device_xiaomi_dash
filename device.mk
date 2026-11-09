@@ -20,7 +20,7 @@ endif
 
 # Eng builds are used for bring-up; keep adb reachable without the
 # on-device authorization dialog.
-ifeq ($(TARGET_BUILD_VARIANT),eng)
+ifneq ($(filter eng userdebug,$(TARGET_BUILD_VARIANT)),)
 WITH_ADB_INSECURE := true
 endif
 
