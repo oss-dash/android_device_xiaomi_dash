@@ -87,6 +87,9 @@ mmqos-mt6991.ko
 mtk-mmdebug-vcp.ko
 mtk_iommu_util.ko
 system_heap.ko
+mtk-mbox.ko
+mtk_rpmsg_mbox.ko
+mtk_tinysys_ipi.ko
 mtk-cmdq-drv-ext.ko
 cmdq-platform-mt6991.ko
 mdp_drv_mt6991.ko
@@ -229,9 +232,6 @@ mtk_dynamic_loading_throttling.ko
 mtk_pbm.ko
 mtk_mdpm.ko
 mddp.ko
-mtk_rpmsg_mbox.ko
-mtk-mbox.ko
-mtk_tinysys_ipi.ko
 cam_fs.ko
 uarthub_drv.ko
 sec.ko
