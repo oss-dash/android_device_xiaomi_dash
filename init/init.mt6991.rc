@@ -1261,7 +1261,13 @@ on property:sys.boot_completed=1 && property:ro.build.type=user && property:ro.d
 on property:ro.boot.crash_reason=*
   setprop vendor.minidump.crash_reason ${ro.boot.crash_reason}
 
-# The /data persistent copy can override the build default. Force the
-# eng USB config before UsbDeviceManager starts so adbd is exposed.
-on post-fs-data
+# The /data persistent copy can override the build default. post-fs-data
+# runs before the persistent properties are fully loaded, so set it at
+# late-init, after /data is read and before zygote starts.
+on late-init
     setprop persist.sys.usb.config mtp,adb
+
+# UsbDeviceManager can start before the persisted property is visible.
+# Set the runtime config too so the gadget includes the adb function.
+on boot
+    setprop sys.usb.config mtp,adb
