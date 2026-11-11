@@ -21,8 +21,6 @@ mtk-pmic-oc-debug.ko
 mtk-ssc.ko
 mtk-ssc-dbg-v2.ko
 ccmni.ko
-mtk_u_ether.ko
-mtk_usb_f_rndis.ko
 rps_perf.ko
 mtk-pwm.ko
 mtk_irtx_pwm.ko

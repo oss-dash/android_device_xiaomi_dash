@@ -55,6 +55,9 @@ BOARD_BOOTCONFIG += androidboot.console=0
 BOARD_BOOTCONFIG += androidboot.hypervisor.version=GenieZone
 BOARD_BOOTCONFIG += androidboot.hypervisor.vm.supported=1
 BOARD_BOOTCONFIG += androidboot.hypervisor.protected_vm.supported=1
+# Keep the USB gadget from being taken over by the CDMA/offload/RNDIS
+# drivers when the MDP chain lifts; adbd needs the UDC.
+BOARD_BOOTCONFIG += kernel.module_blacklist=c2k_usb,usb_offload,mtk_u_ether,mtk_usb_f_rndis
 BOARD_KERNEL_CMDLINE += bootopt=64S3,32N2,64N2
 BOARD_KERNEL_CMDLINE += kasan=off
 BOARD_KERNEL_CMDLINE += rcupdate.rcu_expedited=1 rcutree.enable_rcu_lazy
