@@ -35,6 +35,10 @@ TARGET_DISABLE_FASTBOOTD := false
 PERF_ANIM_OVERRIDE := true
 SURFACE_FLINGER_BOOST := true
 
+# SurfaceFlinger Refresh Rates
+$(call soong_config_set,surfaceflinger,frame_rate_category_high,120)
+$(call soong_config_set,surfaceflinger,frame_rate_category_min,60)
+
 # BCR
 TARGET_INCLUDE_BCR := true
 
