@@ -77,24 +77,21 @@ BOARD_KERNEL_IMAGE_NAME := Image.lz4
 BOARD_USES_GENERIC_KERNEL_IMAGE := true
 BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 
-KERNEL_PATH := $(DEVICE_PATH)-kernel
-TARGET_PREBUILT_KERNEL := $(KERNEL_PATH)/$(BOARD_KERNEL_IMAGE_NAME)
-TARGET_PREBUILT_KERNEL_HEADERS := $(KERNEL_PATH)/kernel-uapi-headers.tar.gz
-BOARD_PREBUILT_DTBIMAGE_DIR := $(KERNEL_PATH)/dtb
+TARGET_KERNEL_VERSION := 6.6
+TARGET_KERNEL_PLATFORM_TARGET := kernel
+TARGET_KERNEL_SOURCE := kernel_device_modules-6.6
+TARGET_KERNEL_NO_GCC := true
+BUILD_BROKEN_SRC_DIR_RW_ALLOWLIST += $(realpath kernel/platform/kernel-6.6)
 
-DLKM_MODULES_PATH := $(KERNEL_PATH)/modules/vendor_dlkm
-RAMDISK_MODULES_PATH := $(KERNEL_PATH)/modules/vendor_ramdisk
-SYSTEM_MODULES_PATH := $(KERNEL_PATH)/modules/system_dlkm
+BOOT_KERNEL_MODULES := $(strip $(shell cat $(DEVICE_PATH)/modules/vendor_boot.modules.load))
+RECOVERY_KERNEL_MODULES := $(BOOT_KERNEL_MODULES)
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(strip $(shell cat $(DEVICE_PATH)/modules/vendor_ramdisk.modules.load))
+BOARD_RECOVERY_KERNEL_MODULES_LOAD := $(strip $(shell cat $(DEVICE_PATH)/modules/recovery.modules.load))
+BOARD_VENDOR_KERNEL_MODULES_LOAD := $(strip $(shell cat $(DEVICE_PATH)/modules/vendor_dlkm.modules.load))
+BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(strip $(shell cat $(DEVICE_PATH)/modules/system_dlkm.modules.load))
 
-BOARD_SYSTEM_KERNEL_MODULES := $(wildcard $(SYSTEM_MODULES_PATH)/*.ko)
-BOARD_SYSTEM_KERNEL_MODULES_LOAD := $(patsubst %,$(SYSTEM_MODULES_PATH)/%,$(shell cat $(SYSTEM_MODULES_PATH)/modules.load))
-
-BOARD_VENDOR_KERNEL_MODULES := $(wildcard $(DLKM_MODULES_PATH)/*.ko)
-BOARD_VENDOR_KERNEL_MODULES_LOAD := $(patsubst %,$(DLKM_MODULES_PATH)/%,$(shell cat $(DLKM_MODULES_PATH)/modules.load))
-
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(wildcard $(RAMDISK_MODULES_PATH)/*.ko)
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES_LOAD := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load))
-BOARD_VENDOR_RAMDISK_RECOVERY_KERNEL_MODULES_LOAD  := $(patsubst %,$(RAMDISK_MODULES_PATH)/%,$(shell cat $(RAMDISK_MODULES_PATH)/modules.load.recovery))
+BOARD_DO_NOT_STRIP_VENDOR_RAMDISK_MODULES := true
+BOARD_DO_NOT_STRIP_VENDOR_MODULES := true
 
 # Partitions
 BOARD_USES_METADATA_PARTITION := true
