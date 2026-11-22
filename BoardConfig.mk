@@ -5,6 +5,9 @@
 
 DEVICE_PATH := device/xiaomi/dash
 
+# Properties
+TARGET_SYSTEM_EXT_PROP := $(DEVICE_PATH)/system_ext.prop
+
 # A/B
 AB_OTA_UPDATER := true
 AB_OTA_PARTITIONS := \
