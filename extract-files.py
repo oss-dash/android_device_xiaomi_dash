@@ -72,13 +72,19 @@ def blob_fixup_zero_wlan_wakelock_cfg(
         return
     if not data.endswith(b'\n'):
         data += b'\n'
-    data += (
+    # Prepend, do not append: the driver's cfg table (WLAN_CFG_ENTRY_NUM_MAX = 550)
+    # is already full when the end of the stock file is reached, so appended keys
+    # are dropped silently. On a 24.11.2026 build this showed up as 144x
+    # "wlanCfgSet:(INIT ERROR) WIFI CFG has no empty entry" during boot while
+    # "WLAN timeout" was still the top wakeup source (45001 activations) and every
+    # suspend attempt was aborted. With the keys first they are parsed.
+    data = (
         b'# Zero the per-event wake-lock grace periods so WLAN timeout never '
         b'blocks suspend\n'
         b'WakeLockThreadTO 0\n'
         b'WakeLockRxTO 0\n'
         b'WakeLockTimerTO 0\n'
-    )
+    ) + data
     with open(file_path, 'wb') as f:
         f.write(data)
 
